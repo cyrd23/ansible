@@ -1,0 +1,38 @@
+---
+
+- name: Install Zeek with Key and Repository
+  hosts: 192.168.1.29
+  become: yes
+
+  tasks:
+    - name: Install required packages (curl, wget, gnupg2)
+      apt:
+        name:
+          - curl
+          - wget
+          - gnupg2
+        state: present
+
+    - name: Add Zeek Repository Key
+      shell: "curl -fsSL https://download.opensuse.org/repositories/security:zeek/xUbuntu_22.04/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/security_zeek.gpg"
+
+    - name: Add Zeek Repository
+      shell: 'echo "deb http://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/ /" | tee /etc/apt/sources.list.d/security:zeek.list'
+    
+    - name: Update APT Repository
+      apt:
+        update_cache: yes
+
+    - name: Install Zeek
+      apt:
+        name: zeek
+        state: present
+
+    - name: Add Zeek to the Installation Path
+      lineinfile:
+        path: ~/.bashrc
+        line: 'export PATH=$PATH:/opt/zeek/bin'
+        create: yes
+
+    - name: Source Bash File
+      shell: source ~/.bashrc
